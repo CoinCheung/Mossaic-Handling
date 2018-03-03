@@ -1,7 +1,13 @@
 1. if not do, see if substract the images with their per-pixel mean can do -- done
 2. try to add more L2  -- done
-3. see if image augumentation can do
+3. see if image augumentation can do -- done added to enlarge the dataset
 4. make lr larger and lr_factor larger
 5. warm up with 0.001 for 400 iters and then use 0.1 and decay by 0.1 at 32k and 48k
 6. prolong the lr with 1e-2
+7. see if gluon.data.vision.cifar10() can combine with mx.io.someInterface -- done, No
 
+8. add random gaussian noise to input images -- a tiny little improvement
+9. see if use more DataLoader num_workers can do -- done, generally faster than single thread
+10. if done with test.py, try to use C to generate gaussian noise or random seed -- done, no need noises any more
+11. see if using optimizer in the paper can do 
+12. see if initializing method have impact

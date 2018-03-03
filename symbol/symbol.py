@@ -2,16 +2,25 @@
 
 
 import mxnet as mx
+import numpy as np
 import core.config as config
+import symbol.meric as meric
+
+
+def pre_processing(data, label):
+    batch_size = config.batch_size
+
+    # transpose and minus average
+    data = mx.sym.transpose(data, axes=(0,3,1,2))
+    data = mx.sym.broadcast_sub(data, mx.sym.reshape(mx.sym.mean(data, axis=(1,2,3)), shape=(batch_size,1,1,1)))
+
+    return data, label
 
 
 
-
-def SoftmaxLoss(scores, label):
+def SoftmaxLoss_with_Acc(scores, label):
     # used control parameters
     cls_num = config.cls_num
-    # predicted class
-    pred = mx.sym.argmax(scores, axis=1)
     # softmax loss
     score_max = mx.sym.max(scores, axis=1)
     score_clean = mx.sym.broadcast_sub(scores, score_max.reshape(shape=(-1,1)))
@@ -22,7 +31,11 @@ def SoftmaxLoss(scores, label):
     product_sum = mx.sym.sum(label_one_hot*score_clean_softmax_log, axis=1)
     loss = -mx.sym.mean(product_sum)
 
-    return loss, pred
+    # predicted class
+    pred = mx.sym.argmax(scores, axis=1)
+    acc = meric.accuracy(pred, label)
+
+    return loss, acc
 
 
 
@@ -30,6 +43,9 @@ def SoftmaxLoss(scores, label):
 def resnet18(cls_num):
     img = mx.sym.var("img")
     label = mx.sym.var("label")
+
+    # implement pre-processing
+    img, label = pre_processing(img, label)
 
     # 3x32x32
     conv32 = mx.sym.Convolution(img, num_filter=16, kernel=(3,3), stride=(1,1), pad=(1,1), no_bias=False, name='conv1')
@@ -91,14 +107,14 @@ def resnet18(cls_num):
     # loss output for training
     softmax_output = mx.sym.SoftmaxOutput(scores, label=label)
     # loss
-    loss, pred = SoftmaxLoss(scores, label)
-    #
+    loss, acc = SoftmaxLoss_with_Acc(scores, label)
 
     # return value
-    scores_out = mx.sym.BlockGrad(scores)
     weight_out = mx.sym.BlockGrad(weight)
+    conv8_out = mx.sym.BlockGrad(conv8)
     loss_out = mx.sym.BlockGrad(loss)
-    out = mx.sym.Group([softmax_output, weight_out, loss_out, pred, label])
+    acc_out = mx.sym.BlockGrad(acc)
+    out = mx.sym.Group([softmax_output, weight_out, conv8_out, loss_out, acc_out])
     #  out = mx.sym.Group([softmax_output, scores_out, weight_out])
 
     return out

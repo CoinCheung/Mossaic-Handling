@@ -4,7 +4,7 @@
 
 import mxnet as mx
 import core.config as config
-import core.symbol as symbol
+import symbol.symbol as symbol
 
 
 def get_train_module():
@@ -29,7 +29,7 @@ def get_train_module():
     )
 
     mod.bind(
-        data_shapes=[('img', (batch_size, 3, 32, 32))],
+        data_shapes=[('img', (batch_size, 32, 32, 3))],
         label_shapes=[('label', (batch_size, ))]
     )
 
@@ -43,9 +43,31 @@ def get_train_module():
             ('beta1', 0.9),
             ('wd', wd),
             ('lr_scheduler', lr_scheduler)
-                        )
+        )
     )
 
     return mod
+
+
+def get_test_module():
+    batch_size = config.batch_size
+
+    mod = mx.mod.Module.load(
+        "./model_export",
+        0,
+        True,
+        context=mx.gpu(),
+        data_names=['img'],
+        label_names=['label'],
+    )
+
+    mod.bind(
+        data_shapes=[('img',(batch_size, 3,32,32))],
+        label_shapes=[('label',(batch_size,))],
+    )
+
+    return mod
+
+
 
 
