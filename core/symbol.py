@@ -2,13 +2,27 @@
 
 
 import mxnet as mx
+import core.config as config
+
 
 
 
 def SoftmaxLoss(scores, label):
+    # used control parameters
+    cls_num = config.cls_num
+    # predicted class
+    pred = mx.sym.argmax(scores, axis=1)
+    # softmax loss
     score_max = mx.sym.max(scores, axis=1)
-    score_clean = scores - score_max
-    pass
+    score_clean = mx.sym.broadcast_sub(scores, score_max.reshape(shape=(-1,1)))
+    score_clean_softmax_log = mx.sym.log_softmax(score_clean, axis=1)
+
+    label_one_hot = mx.sym.one_hot(label, cls_num)
+
+    product_sum = mx.sym.sum(label_one_hot*score_clean_softmax_log, axis=1)
+    loss = -mx.sym.mean(product_sum)
+
+    return loss, pred
 
 
 
@@ -74,17 +88,18 @@ def resnet18(cls_num):
     flatten = mx.sym.flatten(avg_pool)
     scores = mx.sym.FullyConnected(flatten, weight=weight, num_hidden=cls_num, no_bias=True)
 
-    # loss output
+    # loss output for training
     softmax_output = mx.sym.SoftmaxOutput(scores, label=label)
-
     # loss
-    loss = SoftmaxLoss(scores, label)
+    loss, pred = SoftmaxLoss(scores, label)
+    #
 
     # return value
     scores_out = mx.sym.BlockGrad(scores)
     weight_out = mx.sym.BlockGrad(weight)
     loss_out = mx.sym.BlockGrad(loss)
-    out = mx.sym.Group([softmax_output, scores_out, weight_out, loss_out])
+    out = mx.sym.Group([softmax_output, weight_out, loss_out, pred, label])
+    #  out = mx.sym.Group([softmax_output, scores_out, weight_out])
 
     return out
 

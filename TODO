@@ -1,1 +1,7 @@
-1. if not do, see if substract the images with their per-pixel mean can do
+1. if not do, see if substract the images with their per-pixel mean can do -- done
+2. try to add more L2  -- done
+3. see if image augumentation can do
+4. make lr larger and lr_factor larger
+5. warm up with 0.001 for 400 iters and then use 0.1 and decay by 0.1 at 32k and 48k
+6. prolong the lr with 1e-2
+

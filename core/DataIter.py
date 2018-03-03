@@ -20,10 +20,29 @@ def trans(data, label):
 
 
 def get_cifar10_iters():
-    cifar10_train = mx.gluon.data.vision.datasets.CIFAR10(root='~/.mxnet/datasets/cifar10/', train=True, transform=trans)
-    cifar10_test = mx.gluon.data.vision.datasets.CIFAR10(root='~/.mxnet/datasets/cifar10/', train=False, transform=trans)
-    train_data = mx.gluon.data.DataLoader(cifar10_train, config.batch_size, shuffle=True)
-    test_data = mx.gluon.data.DataLoader(cifar10_test, config.batch_size, shuffle=True)
+    cifar10_train = mx.gluon.data.vision.datasets.CIFAR10(
+        root='~/.mxnet/datasets/cifar10/',
+        train=True,
+        transform=trans
+    )
+    cifar10_test = mx.gluon.data.vision.datasets.CIFAR10(
+        root='~/.mxnet/datasets/cifar10/',
+        train=False,
+        transform=trans
+    )
+
+    train_data = mx.gluon.data.DataLoader(
+        cifar10_train,
+        config.batch_size,
+        shuffle=True,
+        last_batch ='rollover'
+    )
+    test_data = mx.gluon.data.DataLoader(
+        cifar10_test,
+        config.batch_size,
+        shuffle=True,
+        last_batch='rollover'
+    )
 
     return train_data, test_data
 
