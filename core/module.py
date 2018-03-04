@@ -53,7 +53,7 @@ def get_test_module():
     batch_size = config.batch_size
 
     mod = mx.mod.Module.load(
-        "./model_export",
+        "./model_export/resnet18",
         0,
         True,
         context=mx.gpu(),
@@ -62,7 +62,7 @@ def get_test_module():
     )
 
     mod.bind(
-        data_shapes=[('img',(batch_size, 3,32,32))],
+        data_shapes=[('img',(batch_size,32,32,3))],
         label_shapes=[('label',(batch_size,))],
     )
 

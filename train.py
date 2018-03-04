@@ -74,7 +74,7 @@ def train():
                 print("lr becomes: {}".format(lr))
 
     # export the trained model for future usage
-    mod.save_checkpoint("./model_export/reset18", 0, True)
+    mod.save_checkpoint("./model_export/resnet18", 0, True)
 
     # draw the training process
     valid_acc = np.array(valid_acc)
