@@ -57,14 +57,14 @@ def get_cifar10_iters():
         batch_size,
         shuffle = True,
         last_batch ='rollover',
-        num_workers = 4
+        #  num_workers = 4
     )
     test_data = mx.gluon.data.DataLoader(
         cifar10_test,
         batch_size,
         shuffle = True,
         last_batch ='rollover',
-        num_workers = 4
+        #  num_workers = 4
     )
 
     return train_data, test_data

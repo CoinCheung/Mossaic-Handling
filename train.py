@@ -11,17 +11,17 @@ import core.visualize as visualize
 
 ## function that predict with given module and an iterator
 def predict(mod, iterator, num_iters):
-    feature_map = []
+    loss_out = []
     acc_out = []
     for (i, (batch,label)) in enumerate(iterator):
         if i < num_iters:
             databatch = mx.io.DataBatch([batch.as_in_context(mx.gpu())], label=[label.as_in_context(mx.gpu())])
             mod.forward(databatch,is_train=False)
             pred = mod.get_outputs()
-            feature_map.append(pred[2].asnumpy())
+            loss_out = pred[-2].asnumpy()
             acc_out.append(pred[-1].asnumpy().reshape((-1,)))
     acc_out = np.mean(np.concatenate(acc_out, axis=0))
-    return feature_map, acc_out
+    return loss_out, acc_out
 
 
 
@@ -59,10 +59,10 @@ def train():
 
             # valid the accuracy each 50 iterations and print training states
             if i % 50 == 0:
-                _, acc_out = predict(mod, test_iter, 16)
+                loss_out, acc_out = predict(mod, test_iter, 16)
                 valid_acc.append(acc_out)
-                print('epoch: {}, iters: {}, training loss: {}, valid accuracy: {}'
-                    .format(e,i,loss,acc_out)
+                print('epoch: {}, iters: {}, training loss: {}, valid loss: {}, valid accuracy: {}'
+                    .format(e,i,loss,loss_out, acc_out)
                     )
 
             i += 1

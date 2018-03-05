@@ -11,3 +11,4 @@
 10. if done with test.py, try to use C to generate gaussian noise or random seed -- done, no need noises any more
 11. see if using optimizer in the paper can do 
 12. see if initializing method have impact
+13. fix network structure. Make sure relu added after the sum instead of before it -- done

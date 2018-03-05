@@ -33,9 +33,12 @@ def get_train_module():
         label_shapes=[('label', (batch_size, ))]
     )
 
-    mod.init_params(mx.init.Xavier())
+    #  mod.init_params(mx.init.Xavier())
+    #  mod.init_params(mx.init.Orthogonal())
+    mod.init_params(mx.init.MSRAPrelu(slope=0))
 
-    lr_scheduler = mx.lr_scheduler.FactorScheduler(step=lr_steps, factor=lr_factor, stop_factor_lr=lr_stop_val)
+    #  lr_scheduler = mx.lr_scheduler.FactorScheduler(step=lr_steps, factor=lr_factor, stop_factor_lr=lr_stop_val)
+    lr_scheduler = mx.lr_scheduler.MultiFactorScheduler(step=[], factor=lr_factor, stop_factor_lr=lr_stop_val)
     mod.init_optimizer(
         optimizer=optimizer,
         optimizer_params=(
