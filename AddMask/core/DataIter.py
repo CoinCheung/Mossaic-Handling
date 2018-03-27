@@ -4,10 +4,12 @@
 
 import mxnet as mx
 import numpy as np
+import random
+import os
 import core.config as config
 
 
-def trans_train(data, label):
+def trans_train_cifar10(data, label):
     '''
     Since the CIFAR-10 dataset images have shapes of (32,32,3), they have to be
     transposed to 'NCWH' in order to be computed through the network
@@ -27,7 +29,7 @@ def trans_train(data, label):
     return data, label
 
 
-def trans_test(data, label):
+def trans_test_cifar10(data, label):
     '''
     Since the CIFAR-10 dataset images have shapes of (32,32,3), they have to be
     transposed to 'NCWH' in order to be computed through the network
@@ -44,12 +46,12 @@ def get_cifar10_iters():
     cifar10_train = mx.gluon.data.vision.datasets.CIFAR10(
         root='~/.mxnet/datasets/cifar10/',
         train=True,
-        transform=trans_train
+        transform=trans_train_cifar10
     )
     cifar10_test = mx.gluon.data.vision.datasets.CIFAR10(
         root='~/.mxnet/datasets/cifar10/',
         train=False,
-        transform=trans_test
+        transform=trans_test_cifar10
     )
 
     train_data = mx.gluon.data.DataLoader(
@@ -69,3 +71,35 @@ def get_cifar10_iters():
 
     return train_data, test_data
 
+
+def get_selfmade_iters():
+    home_dir = os.path.expandvars('$HOME')
+    batch_size = config.batch_size
+    train_pth = home_dir + '/.mxnet/datasets/MaskDataSet/train.rec'
+    val_pth = home_dir + '/.mxnet/datasets/MaskDataSet/val.rec'
+    #  img_shape = (224, 224, 3)
+    img_shape = (3, 224, 224)
+    seed = random.randint(0, 5000)
+
+    train_iter = mx.io.ImageRecordIter(
+        path_imgrec=train_pth,
+        data_shape=img_shape,
+        label_width=1,
+        shuffle=True,
+        seed = seed,
+        batch_size=batch_size,
+        rand_mirror=True,
+        resize=300,
+    )
+    val_iter = mx.io.ImageRecordIter(
+        path_imgrec=val_pth,
+        data_shape=img_shape,
+        label_width=1,
+        shuffle=True,
+        seed = seed,
+        batch_size=batch_size,
+        rand_mirror=True,
+        resize=300,
+    )
+
+    return train_iter, val_iter

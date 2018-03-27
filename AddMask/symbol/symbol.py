@@ -41,11 +41,15 @@ def SoftmaxLoss_with_Acc(scores, label):
 
 
 def resnet18(cls_num):
+    '''
+        This is the resent-18 used for cifar-10 dataset. The structure is the
+        same as that used in the experiment in the paper
+    '''
     img = mx.sym.var("img")
     label = mx.sym.var("label")
 
     # implement pre-processing
-    img, label = pre_processing(img, label)
+    #  img, label = pre_processing(img, label)
 
     # 3x32x32
     conv32 = mx.sym.Convolution(img, num_filter=16, kernel=(3,3), stride=(1,1), pad=(1,1), no_bias=False, name='conv1')
@@ -124,6 +128,123 @@ def resnet18(cls_num):
 
     return out
 
+
+
+def resnet32(cls_num):
+    img = mx.sym.var("img")
+    label = mx.sym.var("label")
+
+    # implement pre-processing
+    img, label =  pre_processing(img, label)
+
+    # 3x224x224
+    conv = mx.sym.Convolution(img, num_filter=64, kernel=(7,7), stride=(2,2), pad=(3,3), no_bias=False, name='conv1')
+    # 64x112x112
+    pool = mx.sym.Pooling(conv, kernel=(3,3), stride=(2,2), pool_type='max', pad=(1,1), name='max_pool')
+
+    #  conv32 = mx.sym.Dropout(conv32, 0.2, 'training')
+    # 64x56x56
+    conv_in = pool
+    for i in range(3):
+        conv = mx.sym.Convolution(conv_in, num_filter=64, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv21_{}'.format(i))
+        bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn21_{}'.format(i))
+        relu = mx.sym.Activation(bn, act_type='relu', name='relu21_{}'.format(i))
+        conv = mx.sym.Convolution(relu, num_filter=64, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv22_{}'.format(i))
+        bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn22_{}'.format(i))
+        conv_in = bn + conv_in
+        conv_in = mx.sym.Activation(conv_in, act_type='relu', name='relu22_{}'.format(i))
+
+    # 64x56x56
+    conv = mx.sym.Convolution(conv_in, num_filter=128, kernel=(3,3), stride=(2,2), pad=(1,1), name='conv31_0')
+    bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn31_0')
+    relu = mx.sym.Activation(bn, act_type='relu', name='relu31_0')
+    # 128x28x28
+    conv = mx.sym.Convolution(relu, num_filter=128, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv32_0')
+    bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn32_0')
+    shortcut = mx.sym.Convolution(conv_in, num_filter=128, kernel=(1,1), stride=(2,2), pad=(0,0), name='shortcut0')
+    shortcut = mx.sym.BatchNorm(shortcut, fix_gamma=False, name='bn3_sc0')
+    bn_sum = bn + shortcut
+    relu = mx.sym.Activation(bn_sum, act_type='relu', name='relu32_0')
+
+    # 128x28x28
+    conv_in = relu
+    for i in range(1,4):
+        conv = mx.sym.Convolution(conv_in, num_filter=128, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv31_{}'.format(i))
+        bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn31_{}'.format(i))
+        relu = mx.sym.Activation(bn, act_type='relu', name='relu31_{}'.format(i))
+        conv = mx.sym.Convolution(relu, num_filter=128, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv32_{}'.format(i))
+        bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn32_{}'.format(i))
+        conv_in = bn + conv_in
+        conv_in = mx.sym.Activation(conv_in, act_type='relu', name='relu32_{}'.format(i))
+
+    # 128x28x28
+    conv = mx.sym.Convolution(conv_in, num_filter=256, kernel=(3,3), stride=(2,2), pad=(1,1), name='conv41_0')
+    bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn41_0')
+    relu = mx.sym.Activation(bn, act_type='relu', name='relu41_0')
+    # 256x14x14
+    conv = mx.sym.Convolution(relu, num_filter=256, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv42_0')
+    bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn42_0')
+    shortcut = mx.sym.Convolution(conv_in, num_filter=256, kernel=(1,1), stride=(2,2), pad=(0,0), name='shortcut1')
+    shortcut = mx.sym.BatchNorm(shortcut, fix_gamma=False, name='bn42_sc0')
+    bn_sum = bn + shortcut
+    relu = mx.sym.Activation(bn_sum, act_type='relu', name='relu42_0')
+
+    # 256x14x14
+    conv_in = relu
+    for i in range(1,6):
+        conv = mx.sym.Convolution(conv_in, num_filter=256, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv41_{}'.format(i))
+        bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn41_{}'.format(i))
+        relu = mx.sym.Activation(bn, act_type='relu', name='relu41_{}'.format(i))
+        conv = mx.sym.Convolution(relu, num_filter=256, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv42_{}'.format(i))
+        bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn42_{}'.format(i))
+        conv_in = bn + conv_in
+        conv_in = mx.sym.Activation(conv_in, act_type='relu', name='relu42_{}'.format(i))
+
+    # 256x14x14
+    conv = mx.sym.Convolution(conv_in, num_filter=512, kernel=(3,3), stride=(2,2), pad=(1,1), name='conv51_0')
+    bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn51_0')
+    relu = mx.sym.Activation(bn, act_type='relu', name='relu51_0')
+    # 512x7x7
+    conv = mx.sym.Convolution(relu, num_filter=512, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv52_0')
+    bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn52_0')
+    shortcut = mx.sym.Convolution(conv_in, num_filter=512, kernel=(1,1), stride=(2,2), pad=(0,0), name='shortcut2')
+    shortcut = mx.sym.BatchNorm(shortcut, fix_gamma=False, name='bn52_sc0')
+    bn_sum = bn + shortcut
+    relu = mx.sym.Activation(bn_sum, act_type='relu', name='relu52_0')
+
+    # 512x7x7
+    conv_in = relu
+    for i in range(1,3):
+        conv = mx.sym.Convolution(conv_in, num_filter=512, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv51_{}'.format(i))
+        bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn51_{}'.format(i))
+        relu = mx.sym.Activation(bn, act_type='relu', name='relu51_{}'.format(i))
+        conv = mx.sym.Convolution(relu, num_filter=512, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv52_{}'.format(i))
+        bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn52_{}'.format(i))
+        conv_in = bn + conv_in
+        conv_in = mx.sym.Activation(conv_in, act_type='relu', name='relu52_{}'.format(i))
+
+    # 512x7x7
+    # avg pooling, dense
+    avg_pool = mx.sym.Pooling(conv_in, global_pool=True, kernel=(7,7), pool_type='avg')
+    # 512x1x1
+    weight = mx.sym.var('weight')
+    flatten = mx.sym.flatten(avg_pool)
+    scores = mx.sym.FullyConnected(flatten, weight=weight, num_hidden=cls_num, no_bias=True)
+
+    # loss output for training
+    softmax_output = mx.sym.SoftmaxOutput(scores, label=label)
+    # loss
+    loss, acc = SoftmaxLoss_with_Acc(scores, label)
+
+    # return value
+    weight_out = mx.sym.BlockGrad(weight)
+    conv_in_out = mx.sym.BlockGrad(conv_in)
+    loss_out = mx.sym.BlockGrad(loss)
+    acc_out = mx.sym.BlockGrad(acc)
+    out = mx.sym.Group([softmax_output, weight_out, conv_in_out, loss_out, acc_out])
+    #  out = mx.sym.Group([softmax_output, scores_out, weight_out])
+
+    return out
 
 
 
