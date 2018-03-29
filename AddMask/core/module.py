@@ -7,7 +7,7 @@ import core.config as config
 import symbol.symbol as symbol
 
 
-def get_train_module_resnet18():
+def get_train_module_resnet_cifar10():
     # control hyper parameters
     num_cls = config.cls_num
     batch_size = config.batch_size
@@ -19,7 +19,7 @@ def get_train_module_resnet18():
     wd = config.weight_decay
 
     # get symbol
-    sym = symbol.resnet18(num_cls)
+    sym = symbol.resnet_cifar10(3, num_cls)  # 3 leads to a 20-layer resnet
     # module
     mod = mx.module.Module(
         sym,
@@ -65,7 +65,8 @@ def get_train_module_resnet18():
     return mod
 
 
-def get_test_module_resnet18():
+
+def get_test_module_resnet_cifar10():
     batch_size = config.batch_size
 
     mod = mx.mod.Module.load(
@@ -87,9 +88,10 @@ def get_test_module_resnet18():
 
 
 
-def get_train_module_resnet32():
+def get_train_module_resnet_imagenet():
     # control hyper parameters
     num_cls = config.cls_num
+    layer_num = config.layer_num
     batch_size = config.batch_size
     optimizer = config.optimizer
     lr_factor = config.lr_factor
@@ -99,13 +101,14 @@ def get_train_module_resnet32():
     wd = config.weight_decay
 
     # get symbol
-    sym = symbol.resnet32(num_cls)
+    sym = symbol.resnet_imagenet(layer_num, num_cls)
     # module
     mod = mx.module.Module(
         sym,
         data_names=['img'],
         label_names=['label'],
         context=mx.gpu(0)
+        #  context=mx.cpu(0)
     )
 
     mod.bind(
@@ -142,6 +145,27 @@ def get_train_module_resnet32():
                 ('lr_scheduler', lr_scheduler)
             )
         )
+
+    return mod
+
+
+
+def get_test_module_resnet_imagenet():
+    batch_size = config.batch_size
+
+    mod = mx.mod.Module.load(
+        "./model_export/resnet_imagenet",
+        0,
+        True,
+        context=mx.gpu(),
+        data_names=['img'],
+        label_names=['label'],
+    )
+
+    mod.bind(
+        data_shapes=[('img',(batch_size, 3, 224, 224))],
+        label_shapes=[('label',(batch_size, ))],
+    )
 
     return mod
 

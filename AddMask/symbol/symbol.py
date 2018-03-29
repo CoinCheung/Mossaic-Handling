@@ -11,7 +11,8 @@ def pre_processing(data, label):
     batch_size = config.batch_size
 
     # transpose and minus average
-    data = mx.sym.transpose(data, axes=(0,3,1,2))
+    #  data = mx.sym.transpose(data, axes=(0,1,2,3))
+    #  data = mx.sym.transpose(data, axes=(0,3,1,2))
     data = mx.sym.broadcast_sub(data, mx.sym.reshape(mx.sym.mean(data, axis=(1,2,3)), shape=(batch_size,1,1,1)))
 
     return data, label
@@ -40,22 +41,25 @@ def SoftmaxLoss_with_Acc(scores, label):
 
 
 
-def resnet18(cls_num):
+def resnet_cifar10(n, cls_num):
     '''
         This is the resent-18 used for cifar-10 dataset. The structure is the
-        same as that used in the experiment in the paper
+        same as that used in the experiment in the paper. By the way, in the paper,
+        the network structure used for cifar-10 is different from imagenet dataset
+        params:
+            - n: the parameter n in the paper. With n = {3, 5, 7, 9}, the
+            network is led to 20, 32, 44 layers.
+            - cls_num: the number of classes for classification. For cifar-10,
+            it is 10.
     '''
     img = mx.sym.var("img")
     label = mx.sym.var("label")
-
-    # implement pre-processing
-    #  img, label = pre_processing(img, label)
 
     # 3x32x32
     conv32 = mx.sym.Convolution(img, num_filter=16, kernel=(3,3), stride=(1,1), pad=(1,1), no_bias=False, name='conv1')
     conv32 = mx.sym.Dropout(conv32, 0.2, 'training')
     # 16x32x32
-    for i in range(3):
+    for i in range(layer_num):
         conv = mx.sym.Convolution(conv32, num_filter=16, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv2_{}'.format(i))
         bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn2_{}'.format(i))
         relu = mx.sym.Activation(bn, act_type='relu', name='relu2_{}'.format(i))
@@ -76,7 +80,7 @@ def resnet18(cls_num):
     conv16 = mx.sym.Activation(conv16, act_type='relu', name='relu5_0')
 
     # 32x16x16
-    for i in range(1,3):
+    for i in range(1,layer_num):
         conv = mx.sym.Convolution(conv16, num_filter=32, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv4_{}'.format(i))
         bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn4_{}'.format(i))
         relu = mx.sym.Activation(bn, act_type='relu', name='relu4_{}'.format(i))
@@ -97,7 +101,7 @@ def resnet18(cls_num):
     conv8 = mx.sym.Activation(conv8, act_type='relu', name='relu7_0')
 
     # 64x8x8
-    for i in range(1,3):
+    for i in range(1,layer_num):
         conv = mx.sym.Convolution(conv8, num_filter=64, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv6_{}'.format(i))
         bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn6_{}'.format(i))
         relu = mx.sym.Activation(bn, act_type='relu', name='relu6_{}'.format(i))
@@ -130,10 +134,25 @@ def resnet18(cls_num):
 
 
 
-def resnet32(cls_num):
+def resnet_imagenet(layer_num, cls_num):
+    '''
+    This defines the network structure used for imagenet in the paper without
+    bottleneck structure. Thus it only supports 18-layer and 34-layer resnet.
+    params:
+        - layer_num: the number of layers. An arg layer_num of {18, 34} means the
+        number of {conv2_x, conv3_x, conv4_x, conv5_x} to be {{2, 2, 2, 2}, {3, 4, 6, 3}}
+        - cls_num: the number of output class numbers
+    '''
     img = mx.sym.var("img")
     label = mx.sym.var("label")
 
+    if layer_num == 18:
+        units_num = [2,2,2,2]
+    elif layer_num == 34:
+        units_num = [3,4,6,3]
+
+
+    #  debug_out = img
     # implement pre-processing
     img, label =  pre_processing(img, label)
 
@@ -145,7 +164,7 @@ def resnet32(cls_num):
     #  conv32 = mx.sym.Dropout(conv32, 0.2, 'training')
     # 64x56x56
     conv_in = pool
-    for i in range(3):
+    for i in range(units_num[0]):
         conv = mx.sym.Convolution(conv_in, num_filter=64, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv21_{}'.format(i))
         bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn21_{}'.format(i))
         relu = mx.sym.Activation(bn, act_type='relu', name='relu21_{}'.format(i))
@@ -168,7 +187,7 @@ def resnet32(cls_num):
 
     # 128x28x28
     conv_in = relu
-    for i in range(1,4):
+    for i in range(1,units_num[1]):
         conv = mx.sym.Convolution(conv_in, num_filter=128, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv31_{}'.format(i))
         bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn31_{}'.format(i))
         relu = mx.sym.Activation(bn, act_type='relu', name='relu31_{}'.format(i))
@@ -191,7 +210,7 @@ def resnet32(cls_num):
 
     # 256x14x14
     conv_in = relu
-    for i in range(1,6):
+    for i in range(1,units_num[2]):
         conv = mx.sym.Convolution(conv_in, num_filter=256, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv41_{}'.format(i))
         bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn41_{}'.format(i))
         relu = mx.sym.Activation(bn, act_type='relu', name='relu41_{}'.format(i))
@@ -214,7 +233,7 @@ def resnet32(cls_num):
 
     # 512x7x7
     conv_in = relu
-    for i in range(1,3):
+    for i in range(1,units_num[3]):
         conv = mx.sym.Convolution(conv_in, num_filter=512, kernel=(3,3), stride=(1,1), pad=(1,1), name='conv51_{}'.format(i))
         bn = mx.sym.BatchNorm(conv, fix_gamma=False, name='bn51_{}'.format(i))
         relu = mx.sym.Activation(bn, act_type='relu', name='relu51_{}'.format(i))
@@ -241,8 +260,9 @@ def resnet32(cls_num):
     conv_in_out = mx.sym.BlockGrad(conv_in)
     loss_out = mx.sym.BlockGrad(loss)
     acc_out = mx.sym.BlockGrad(acc)
-    out = mx.sym.Group([softmax_output, weight_out, conv_in_out, loss_out, acc_out])
-    #  out = mx.sym.Group([softmax_output, scores_out, weight_out])
+    img_out = mx.sym.BlockGrad(img)
+    #  debug_out = mx.sym.BlockGrad(debug_out)
+    out = mx.sym.Group([softmax_output, weight_out, conv_in_out, img_out, loss_out, acc_out])
 
     return out
 
