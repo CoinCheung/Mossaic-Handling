@@ -1,6 +1,7 @@
 #include<vector>
 #include"point.h"
 #include"topk.h"
+#include"logging.h"
 #include<iostream>
 
 
@@ -17,7 +18,6 @@ TopkHeap::TopkHeap(long num)
 
 void TopkHeap::add(point p)
 {
-    // heap.push_back(std::move(p));
     heap.push_back(p);
     len ++;
 }
@@ -64,21 +64,26 @@ void TopkHeap::sink_node(long ind)
 
 point TopkHeap::get_root()
 {
-    // TODO: check length here
+    CHECK(len > 0) << "the length of Topk algorithm heap should be greater than 0" 
+        << std::endl;
     return heap[0];
 }
 
 
 unsigned char TopkHeap::get_root_val()
 {
-    // TODO: check length here
+    CHECK(len > 0) << "the length of Topk algorithm heap should be greater than 0" 
+        << std::endl;
     return heap[0].val;
 }
 
 
 void TopkHeap::set_root(point p)
 {
-    heap[0] = p;
+    if (len == 0)
+        heap.push_back(p);
+    else
+        heap[0] = p;
 }
 
 

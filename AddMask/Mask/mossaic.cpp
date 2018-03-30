@@ -1,43 +1,42 @@
 #include<iostream>
 #include<opencv2/opencv.hpp>
 #include<vector>
-#include<memory>
 #include"topk.h"
 #include"point.h"
 #include"logging.h"
+#include"mossaic.h"
 
 
 
-void add_mask(float ratio);
-cv::Mat gen_mask(cv::Mat&, float ratio);
-cv::Mat merge_mask(cv::Mat&, cv::Mat&);
 
-void try_something();
-
-int main()
-{
-    add_mask(0.45);
-    // try_something();
-    return 0;
-}
+// int main()
+// {
+//     const char* org_pic = "./pics/batch1-42_org.jpg";
+//     const char* heatmap = "./pics/batch1-42_hm.jpg";
+//     const char* masked_pic = "./pics/batch1-42_merge.jpg";
+//     add_mossaic(org_pic, heatmap, masked_pic, 0.45);
+//     // try_something();
+//     return 0;
+// }
 
 
-void add_mask(float ratio)
+void add_mossaic(const char* org, const char* heat, const char* out, float ratio)
 {
     using namespace std;
     using namespace cv;
 
-    Mat org_pic = imread("./pics/batch0-46_org.jpg", -1);
-    Mat heatmap = imread("./pics/batch0-46_hm.jpg", -1);
+    Mat org_pic = imread(org, -1);
+    Mat heatmap = imread(heat, -1);
     CHECK(!org_pic.empty()) << "image orginal does not exist!" << endl;
     CHECK(!heatmap.empty()) << "image heatmap does not exist!" << endl;
+
     Mat mask = gen_mask(heatmap, ratio);
-    imwrite("./pics/batch0-46_mask.jpg", mask);
-    // Mat merge = merge_mask(org_pic, heatmap);
-    // imwrite("batch0-46_merge.jpg", merge);
+    Mat merge = merge_mask(org_pic, mask);
+    imwrite(out, merge);
 }
 
 
+/* generate mask Mat for mossaic location */
 cv::Mat gen_mask(cv::Mat& heatmap, float ratio)
 {
     using namespace cv;
@@ -105,19 +104,48 @@ cv::Mat gen_mask(cv::Mat& heatmap, float ratio)
 }
 
 
-cv::Mat merge_mask(cv::Mat&);
-
-
-
-void try_something()
+cv::Mat merge_mask(cv::Mat& org_img, cv::Mat& mask)
 {
-    TopkHeap th(10);
-    for (int i{9}; i >= 0; i--)
-    // for (int i{0}; i < 10; i++)
-        th.add(point(0,0,i));
+    using namespace std;
+    using namespace cv;
 
-    th.print();
-    th.adjust();
-    th.print();
+    int rows{org_img.rows};
+    int cols{org_img.cols};
+    int channels{org_img.channels()};
 
+    CHECK((rows == mask.rows) && (cols == mask.cols))
+        << "original image and mask should have same size" << endl;
+
+    auto type{org_img.type()};
+    unsigned char *sp{nullptr};
+    unsigned char *dp{nullptr};
+    Rect rect;
+    Mat grid;
+    Scalar color;
+
+    int msize{10};
+    int cstep{channels * msize};
+
+
+    for (int i{0}; i < rows - msize; i += msize)
+    {
+        sp = org_img.ptr<unsigned char>(i);
+        dp = mask.ptr<unsigned char>(i);
+
+        for (int js{0}, jd{0}; jd < cols - msize; js+=cstep, jd+=msize)
+        {
+            if (dp[jd] == 255)
+            {
+                color = Scalar(sp[js], sp[js+1], sp[js+2]);
+                rect = Rect(jd, i, msize, msize);
+
+                grid = org_img(rect);
+                Mat(rect.size(), type, color).copyTo(grid);
+            }
+        }
+    }
+
+    return org_img;
 }
+
+

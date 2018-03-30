@@ -1,15 +1,26 @@
 CPP = clang++
-CFLAGs = -std=c++11 -c -g $(shell pkg-config --cflags opencv)
-LFLAGs = -ltcmalloc $(shell pkg-config --libs opencv)
+CC = clang
+CFLAGs = -c -fPIC -std=c++11 $(shell pkg-config --cflags opencv)
+LFLAGs = -ltcmalloc $(shell pkg-config --libs opencv) -shared
 ODIR = ./build
+LIBDIR = ./lib
 
 SRCs = $(wildcard *.cpp)
 OBJs_CURR = $(patsubst %.cpp, %.o, $(SRCs))
 OBJs = $(patsubst %.cpp, $(ODIR)/%.o, $(SRCs))
 
 
-main: $(OBJs_CURR)
-	$(CPP) $(OBJs) -o $@ $(LFLAGs)
+all: libmossaic.so libmossaic.a
+
+
+libmossaic.so: $(OBJs_CURR)
+	@mkdir -p $(LIBDIR)
+	$(CPP) $(OBJs) -o $(LIBDIR)/$@ $(LFLAGs)
+
+
+libmossaic.a: $(OBJs_CURR)
+	@mkdir -p $(LIBDIR)
+	ar rsc $(LIBDIR)/$@ $(OBJs)
 
 
 $(OBJs_CURR): %.o: %.cpp
@@ -18,5 +29,5 @@ $(OBJs_CURR): %.o: %.cpp
 
 
 clean:
-	rm -rf try main $(ODIR)
+	rm -rf try main $(ODIR) $(LIBDIR)
 

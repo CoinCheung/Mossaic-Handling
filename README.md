@@ -22,10 +22,15 @@ Then the resnet-18 network will be trained on Cifar-10 dataset.
 
 # Test and generate the heat maps
 Run the test.py script, and images together with their associated heat map images will be saved to the directory of "pictures_export"
-```python
+```sh
     $ python test.py
 ```
 
-
+# build the add mossaic C++ program
+```sh
+    $ cd AddMask/Mask
+    $ make clean && make
+```
+This requres opencv installed ahead of time for link.
 
 

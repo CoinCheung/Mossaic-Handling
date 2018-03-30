@@ -6,3 +6,5 @@
 /AddMask/model_export/*
 /AddMask/pictures_export/*.jpg
 /AddMask/Mask/pics/
+/AddMask/Mask/build/
+/AddMask/Mask/lib/
