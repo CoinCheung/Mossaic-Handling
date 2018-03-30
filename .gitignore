@@ -1,6 +1,8 @@
+*.[oa]
 /scripts/
 /TODO
 /try.py
 /AddMask/screen-shot/
 /AddMask/model_export/*
 /AddMask/pictures_export/*.jpg
+/AddMask/Mask/pics/

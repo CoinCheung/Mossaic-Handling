@@ -19,7 +19,7 @@
 #
 
 
-generate_batches = 10
+generate_batches = 5
 
 
 ####
@@ -29,7 +29,7 @@ layer_num = 18
 batch_size = 48
 image_size = 224
 
-epoches = 5
+epoches = 70
 
 # optimizer params
 weight_decay = 1e-4
