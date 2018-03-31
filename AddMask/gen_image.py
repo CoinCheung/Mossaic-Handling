@@ -64,14 +64,13 @@ def img_save_to(heat_map, batch, prefix):
     return name_tuples
 
 
-def do_add_mossaic(path_pairs):
+def add_mossaic_fun():
     lib = ctypes.cdll.LoadLibrary('Mask/lib/libmossaic.so')
     add_mask = lib.add_mossaic
     add_mask.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p,
             ctypes.c_float]
 
-    [add_mask(el[0].encode('utf-8'), el[1].encode('utf-8'), el[2].encode('utf-8'),
-        mossaic_ratio) for el in path_pairs]
+    return add_mask
 
 
 
@@ -166,9 +165,12 @@ def test_resnet_imagenet():
         count += 1
 
     # add mossaic according to the heat maps and save the masked images
-    do_add_mossaic(path_tuples)
-    # TODO: add an option to remove the heat maps
-    # TODO: change to get function and use the function here
+    fun = add_mossaic_fun()
+    [fun(el[0].encode('utf-8'), el[1].encode('utf-8'), el[2].encode('utf-8'),
+        mossaic_ratio) for el in path_tuples]
+
+    if config.gen_heatmap == False:
+        [os.remove(el[1]) for el in path_tuples]
 
 
 

@@ -34,7 +34,3 @@ Run the test.py script, and images together with their associated heat map image
 ```
 This requres opencv installed ahead of time for link.
 
-
-1. The model is trained on 224x224 images, so it should work well on 224x224 test images. If someone would like to use this model on images of other resolutions, he or she could resize the images before feeding them to the model.
-
-2. to adjust the ratio of the mossaic added to the orginal picture, modify the value of the variable ```mossaic_ratio``` in the file ```AddMask/core/config.py```.

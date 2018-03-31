@@ -21,6 +21,7 @@
 
 generate_batches = 5
 mossaic_ratio = 0.5
+gen_heatmap = True
 
 
 ####
@@ -38,7 +39,6 @@ lr_factor = 0.1
 lr_steps = 7000
 lr_stop_val = 1e-7
 learning_rate = 1e-1
-#  learning_rate = 1e-2
 
 #  optimizer = 'adam'
 optimizer = 'sgd'
