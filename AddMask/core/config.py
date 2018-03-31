@@ -20,6 +20,7 @@
 
 
 generate_batches = 5
+mossaic_ratio = 0.5
 
 
 ####

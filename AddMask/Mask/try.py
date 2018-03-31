@@ -13,7 +13,7 @@ org = org.encode('utf-8')
 hm = hm.encode('utf-8')
 out = out.encode('utf-8')
 
-add_mask(org, hm, out, 0.5)
+#  add_mask(org, hm, out, 0.5)
 #  add_mask("./pics/batch1-42_org.jpg", "./pics/batch1-42_hm.jpg", "./pics/batch1-42_merge.jpg", 0.5)
 
 

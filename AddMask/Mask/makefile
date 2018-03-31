@@ -1,7 +1,6 @@
 CPP = clang++
-CC = clang
-CFLAGs = -c -fPIC -std=c++11 $(shell pkg-config --cflags opencv)
-LFLAGs = -ltcmalloc $(shell pkg-config --libs opencv) -shared
+CFLAGs = -c -fPIC -O2 -std=c++11 $(shell pkg-config --cflags opencv)
+LFLAGs = $(shell pkg-config --libs opencv) -shared # -ltcmalloc 
 ODIR = ./build
 LIBDIR = ./lib
 
