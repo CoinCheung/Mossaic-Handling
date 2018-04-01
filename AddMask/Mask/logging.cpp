@@ -40,5 +40,6 @@ log log::operator<<(std::ostream& (*op)(std::ostream&))
 log::~log()
 {
     std::cout << std::endl;
-    abort();
+    exit(1);
+    // abort();
 }

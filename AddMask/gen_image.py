@@ -19,6 +19,7 @@ import core.visualize as visualize
 
 image_size = config.image_size
 mossaic_ratio = config.mossaic_ratio
+save_path = config.save_path
 
 
 def heat_maps(weight, feature_maps, label):
@@ -77,7 +78,6 @@ def add_mossaic_fun():
 def test_resnet_cifar10(draw=False):
     # control parameters
     batch_num = config.generate_batches
-    save_path = "./pictures_export/"
 
     # get trained module
     mod = module.get_test_module_resnet_cifar10()
@@ -123,17 +123,15 @@ def test_resnet_imagenet():
     # control parameters
     batch_num = config.generate_batches
 
-    save_path = "./pictures_export/"
-    #  hm_path = save_path + "heatmaps/"
     if not os.path.exists(save_path):
         os.makedirs(save_path)
-    #  os.makedirs(hm_path)
 
     # get trained module
     mod = module.get_test_module_resnet_imagenet()
 
     # get dataIter
     _, it = DI.get_selfmade_iters()
+    #  it, _ = DI.get_selfmade_iters()
 
     # compute forward
     feature_maps = []
@@ -147,7 +145,6 @@ def test_resnet_imagenet():
         out = mod.get_outputs()
         weight = out[1].asnumpy()
         feature_maps = out[2].asnumpy()
-        #  org_batch = out[3].asnumpy()
         org_batch = batch.data[0].asnumpy()
 
         label = batch.label[0]
@@ -157,7 +154,6 @@ def test_resnet_imagenet():
 
         # save heat_map and its associated image
         prefix = "".join([save_path, "batch{}".format(count)])
-        #  hm_prefix = "".join([hm_path, "batch{}".format(count)])
         org_batch = [el.transpose(1,2,0).astype(np.uint8) for el in org_batch]
         one_path_tuple = img_save_to(hm, org_batch, prefix)
         path_tuples.extend(one_path_tuple)
