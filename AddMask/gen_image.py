@@ -1,11 +1,9 @@
 #!/usr/bin/python
 # -*- encoding: utf8 -*-
 
-
 import mxnet as mx
 import numpy as np
 import os
-import ctypes
 from skimage import transform, io
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -14,6 +12,7 @@ import core.module as module
 import core.DataIter as DI
 import core.config as config
 import core.visualize as visualize
+import core.clibs as clibs
 
 
 
@@ -63,16 +62,6 @@ def img_save_to(heat_map, batch, prefix):
             range(batch_size)]
 
     return name_tuples
-
-
-def add_mossaic_fun():
-    lib = ctypes.cdll.LoadLibrary('Mask/lib/libmossaic.so')
-    add_mask = lib.add_mossaic
-    add_mask.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p,
-            ctypes.c_float]
-
-    return add_mask
-
 
 
 def test_resnet_cifar10(draw=False):
@@ -131,7 +120,6 @@ def test_resnet_imagenet():
 
     # get dataIter
     _, it = DI.get_selfmade_iters()
-    #  it, _ = DI.get_selfmade_iters()
 
     # compute forward
     feature_maps = []
@@ -161,7 +149,7 @@ def test_resnet_imagenet():
         count += 1
 
     # add mossaic according to the heat maps and save the masked images
-    fun = add_mossaic_fun()
+    fun = clibs.add_mossaic_fun()
     [fun(el[0].encode('utf-8'), el[1].encode('utf-8'), el[2].encode('utf-8'),
         mossaic_ratio) for el in path_tuples]
 
@@ -170,7 +158,68 @@ def test_resnet_imagenet():
 
 
 
+def gen_mossaic_training_dataset():
+    # control parameters
+    batch_num = config.generate_batches
+    save_path = os.getcwd() + "/../dataset/Mossaic_JPEG/"
+
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+
+    # get trained module
+    mod = module.get_test_module_resnet_imagenet()
+
+    # get dataIter
+    it, _ = DI.get_selfmade_iters()
+
+    print('===========================')
+    print('compute the heat maps')
+    print('===========================')
+    # compute forward
+    feature_maps = []
+    weight = []
+    path_tuples = []
+    count = 0
+    for batch in it:
+        mod.forward(batch, is_train=False)
+        out = mod.get_outputs()
+        weight = out[1].asnumpy()
+        feature_maps = out[2].asnumpy()
+        org_batch = batch.data[0].asnumpy()
+
+        label = batch.label[0]
+
+        # compute heat map
+        hm = heat_maps(weight, feature_maps, label.asnumpy())
+
+        # save heat_map and its associated image
+        prefix = "".join([save_path, "batch{}".format(count)])
+        org_batch = [el.transpose(1,2,0).astype(np.uint8) for el in org_batch]
+        one_path_tuple = img_save_to(hm, org_batch, prefix)
+        path_tuples.extend(one_path_tuple)
+
+        count += 1
+
+
+    print('===========================')
+    print('start to generate dataset')
+    print('===========================')
+    # write the original image and heat map image pathes to a file
+    namefile = save_path+"/.filenames.txt"
+    print(save_path)
+    with open(namefile, 'w') as wf:
+        [wf.write('{}\n{}\n'.format(el[0], el[1])) for el in path_tuples]
+
+    # get c++ function
+    fun = clibs.gen_mossaic_dataset()
+    fun(namefile.encode('utf_8'), mossaic_ratio)
+
+    [os.remove(el[1]) for el in path_tuples]
+    [os.remove(el[0]) for el in path_tuples]
+    os.remove(namefile)
+
+
 if __name__ == "__main__":
     #  test_resnet_cifar10(True)
     test_resnet_imagenet()
-
+    #  gen_mossaic_training_dataset()

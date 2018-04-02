@@ -22,7 +22,6 @@
 generate_batches = 5
 mossaic_ratio = 0.3
 gen_heatmap = False
-#  save_path = "../dataset/Mossaic_JPEG/"
 save_path = "./pictures_export/"
 
 
