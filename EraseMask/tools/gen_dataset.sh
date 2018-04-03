@@ -1,11 +1,12 @@
 #!/bin/bash
 
 
+
 # paths
 root_dir=../
-img_dir=$root_dir/dataset/JPEG_IMG
+img_dir=$root_dir/dataset/Mossaic_JPEG
 lst_dir=$root_dir/dataset
-dataset_pth=$HOME/.mxnet/datasets/MaskDataSet/Add
+dataset_pth=$HOME/.mxnet/datasets/MaskDataSet/Erase/
 
 
 # generate lst files

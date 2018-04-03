@@ -75,9 +75,8 @@ def get_cifar10_iters():
 def get_selfmade_iters():
     home_dir = os.path.expandvars('$HOME')
     batch_size = config.batch_size
-    train_pth = home_dir + '/.mxnet/datasets/MaskDataSet/train.rec'
-    val_pth = home_dir + '/.mxnet/datasets/MaskDataSet/val.rec'
-    #  img_shape = (224, 224, 3)
+    train_pth = home_dir + '/.mxnet/datasets/MaskDataSet/Add/train.rec'
+    val_pth = home_dir + '/.mxnet/datasets/MaskDataSet/Add/val.rec'
     img_shape = (3, 224, 224)
     seed = random.randint(0, 5000)
 
