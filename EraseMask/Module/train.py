@@ -20,8 +20,6 @@ save_path = os.getcwd() + "/model_export/"
 
 
 ## symbols
-
-
 def generator():
     slope = 0.2
     filter_base = 64
