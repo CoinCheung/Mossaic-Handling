@@ -9,6 +9,7 @@ import core.config as config
 
 
 
+batch_size = config.batch_size
 optimizer = config.optimizer
 lr = config.lr
 beta1 = config.beta1
@@ -32,7 +33,7 @@ def network_init(net):
 
 
 ## get networks and their associated trainers
-def get_network():
+def get_train_network():
     gen = generator_unet(3, 64, True, 5)
     #  gen = gen_unet(3, 64, True, 5)
     gen.hybridize()
@@ -50,4 +51,12 @@ def get_network():
     return gen, dis, TrainerG, TrainerD
 
 
+
+def get_test_network():
+    sym = mx.sym.load(config.save_path + '/generator-symbol.json')
+    net = mx.mod.Module(symbol=sym, label_names=None, context=mx.gpu())
+    net.bind(data_shapes=[('data', (batch_size, 3, 224, 224))])
+    net.load_params(config.save_path + '/generator-0000.params')
+
+    return net
 

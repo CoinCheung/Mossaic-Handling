@@ -3,6 +3,7 @@
 
 
 import mxnet as mx
+import numpy as np
 import os
 import random
 import core.config as config
@@ -10,7 +11,7 @@ import core.config as config
 
 batch_size = config.batch_size
 
-def get_dataiter():
+def get_dataiter(batch_size = batch_size):
     home_dir = os.path.expandvars('$HOME')
     train_path = home_dir + '/.mxnet/datasets/MaskDataSet/Erase/train.rec'
     val_path = home_dir + '/.mxnet/datasets/MaskDataSet/Erase/val.rec'
@@ -39,8 +40,14 @@ def get_dataiter():
 
 # normalize an image to range [-1, 1]
 def img_norm(img):
-    max_ = mx.nd.max(img)
-    min_ = mx.nd.min(img)
-    img = (2 * img - max_ - min_) / (max_ - min_)
+    img /= 127.5
+    img -= 1
     return img
 
+
+# opposite operation of img_norm() which convert an image from [-1, 1] to [0, 255]
+def img_recover(img):
+    img += 1
+    img *= 127.5
+    img = img.astype(np.uint8)
+    return img

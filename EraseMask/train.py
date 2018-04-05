@@ -10,7 +10,7 @@ import numpy as np
 import core.config as config
 from core.DataIter import get_dataiter, img_norm
 from core.Visualize import ImgGrids
-from core.Network import get_network
+from core.Network import get_train_network
 
 
 epoch = config.epoch
@@ -19,7 +19,7 @@ save_path = config.save_path
 
 
 def train():
-    gen, dis, TrainerG, TrainerD = get_network()
+    gen, dis, TrainerG, TrainerD = get_train_network()
     lossGAN = gluon.loss.SigmoidBinaryCrossEntropyLoss()
     lossL1 = gluon.loss.L1Loss()
 
