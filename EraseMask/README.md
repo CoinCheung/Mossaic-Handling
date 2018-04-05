@@ -10,7 +10,7 @@ This program is developed and should be run on the platform of Linux with python
 
 ## Creating datasets
 I have prepared the training and testing datasets with the method introduced in the ```AddMask``` directory. The raw images could be found in the directory of ```EraseMask/dataset/Mossaic_JPEG/```. To generate the record files for mxnet/gluon, one could run the script:
-```python
+```shell
     $ cd tools
     $ sh gen_dataset.sh
 ```
@@ -19,7 +19,7 @@ After a few minutes, the record will be generated.
 
 ## Training
 Run the ```train.py``` program to start training the network.
-```python
+```shell
     $ python train.py
 ```
 One can change the batch size and optimizer parameters to control the training process accroding his or her environments. These changes could be done in the file of ```core/config.py```.  
@@ -27,7 +27,7 @@ One can change the batch size and optimizer parameters to control the training p
 
 ## Generate unmasked images
 After training, one could test the network to see what a work it has done. Run the program:
-```python
+```shell
     $ python gen_images.py
 ```
 The one could see the orignal images, masked images and the mossaic-removed images in the directory of ```pics_export/```.
