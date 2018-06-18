@@ -39,7 +39,7 @@ Here are some details of how to implement this pix2pix GAN, which I found worth 
 
 1. **Conditional GAN discriminator:** When training the network, masked images are concated to their "real" or "fake" images counterparts as a condition to feed into the discriminator. Only discriminator needs this condition, generator receives normal image input.
 
-2. **Unet generator:** The generator is a encoder-decoder structure with symmetric layers concated together apart from the outer-most and inner-most layers. More details could be found in the paper.
+2. **Unet generator:** The generator is an encoder-decoder structure with symmetric layers concated together apart from the outer-most and inner-most layers. More details could be found in the paper.
 
 3. **Patchnet discriminator:** Rather than a sigmoid single value, the discriminator outputs a sigmoid feature map without average pooling operations. Each point on the last feature map is associated with an area of patch on the input image. Pass the point through a sigmoid function to deduce the probablity whether this patch on the input is a true patch or a generated patch. The label (true or generated) should be broadcasted to the shape same as the last feature map so that a cross-entropy loss is computed for backward propagation.
 
